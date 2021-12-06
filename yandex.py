@@ -1,8 +1,5 @@
-import os
-import requests
-
-
 class Yan_disk:
+    """Яндекс диск"""
     url = 'https://cloud-api.yandex.net/v1/'
 
     def __init__(self, token, folder='Фотографии'):
@@ -38,6 +35,7 @@ class Yan_disk:
 
     def creating_folder(self):
         """Создание папки на Яндекс диске"""
+        import requests
         folder_creation_method = 'disk/resources'
         headers = self.get_headers()
         params = {'path': self.folder}
@@ -49,6 +47,7 @@ class Yan_disk:
 
     def getting_download_address(self, file_name):
         """Получение ссылки для записи на Яндекс диск"""
+        import requests
         upload_method = 'disk/resources/upload'
         upload_url = self.url + upload_method
         headers = self.get_headers()
@@ -61,6 +60,8 @@ class Yan_disk:
 
     def uploading_files(self):
         """Загрузка файлов на Яндекс диск"""
+        import requests
+        import os
         if os.path.join('download_folder'):
             my_list_files = os.listdir('download_folder')
             if len(my_list_files) == 0:
