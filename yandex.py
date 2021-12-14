@@ -66,16 +66,19 @@ class Yan_disk:
             my_list_files = os.listdir('download_folder')
             if len(my_list_files) == 0:
                 print('Отсутствуют файлы для загрузки')
+                return False
             else:
                 for file_name in my_list_files:
                     file_name_path = os.path.join('download_folder', file_name)
                     href = self.getting_download_address(file_name=file_name)
                     if href is None:
                         print(f'Ошибка загрузки, проверьте наличие папки "{self.folder}" на Яндекс диске')
-                        break
+                        return False
                     with open(file_name_path, 'rb') as f:
                         print(f'Загрузка файла {file_name}')
                         response_uploading = requests.put(href, files={'file': f})
                         self.server_responses(response_uploading)
         else:
             print('Отсутствует исходная папка')
+            return False
+        return True

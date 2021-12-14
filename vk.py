@@ -2,11 +2,11 @@ class VK:
     """В контакте"""
     url = 'https://api.vk.com/method/'
 
-    def __init__(self, id_users, album_id='profile'):
+    def __init__(self, id_users, token):
         self.id_users = id_users
-        self.album_id = album_id
+        self.token = token
         self.params = {
-            'access_token': '958eb5d439726565e9333aa30e50e0f937ee432e927f0dbd541c541887d919a7c56f95c04217915c32008',
+            'access_token': self.token,
             'v': '5.131',
         }
 
@@ -48,13 +48,13 @@ class VK:
         print(response_text)
         return response_text
 
-    def users_photo(self, method='photos.get', count=5):
+    def users_photo(self, album_id='profile', method='photos.get', count=5):
         """получение списка фотографий пользователя"""
         import requests
         full_url = self.url + method
         params = {
             'owner_id': self.id_users,
-            'album_id': self.album_id,
+            'album_id': album_id,
             'extended': '1',
             'count': count
         }
@@ -72,9 +72,9 @@ class VK:
         else:
             return res.json()
 
-    def max_users_photo(self):
+    def max_users_photo(self, album_id='profile'):
         """Определение фотографий максимального размера"""
-        json_dict = self.users_photo()
+        json_dict = self.users_photo(album_id=album_id)
         if not json_dict:
             return False
         else:
@@ -92,14 +92,14 @@ class VK:
                 big_photos += temp_list
             return big_photos
 
-    def download_photos(self):
+    def download_photos(self, album_id='profile'):
         """Скачивание и переименование фотографий"""
         import os
         import requests
         from pprint import pprint
-        big_photos = self.max_users_photo()
+        big_photos = self.max_users_photo(album_id=album_id)
         if not big_photos:
-            pass
+            return False
         else:
             directory = os.getcwd()
             name_folder = 'download_folder'
@@ -153,15 +153,16 @@ class VK:
                 album_list = []
                 for album in server_res['response']['items']:
                     if album['size'] != 0:
-                        album_list += [f"Название альбома: {album['title']}", f"Идентификатор альбома: {album['id']}",
-                                       f"Количество фотографий в альбоме: {album['size']}"]
+                        album_list += [[f"Название альбома: {album['title']}", f"Идентификатор альбома: {album['id']}",
+                                       f"Количество фотографий в альбоме: {album['size']}"]]
                 if len(album_list) == 0:
                     result = 'В доступных альбомах фотографии отсутствуют'
+                    print(result)
                 else:
                     result = album_list
             else:
                 result = 'Доступные альбомы отсутствуют'
-            print(result)
+                print(result)
             return result
 
     def clear_download_folder(self, name_folder='download_folder'):

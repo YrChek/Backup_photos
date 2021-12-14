@@ -2,9 +2,7 @@ class Classmates:
     """Одноклассники"""
     url = 'https://api.ok.ru/fb.do'
 
-    def __init__(self, fid, count=5, secret_key='',
-                 application_key='',
-                 access_token=''):
+    def __init__(self, fid, secret_key, application_key, access_token, count=5):
         self.fid = fid
         self.count = count
         self.secret_key = secret_key
@@ -90,7 +88,7 @@ class Classmates:
         """Скачивание и переименование фотографий"""
         res = self.users_photo()
         if not res:
-            pass
+            return False
         else:
             if 'error_code' in res:
                 self.server_responses(res)
@@ -129,6 +127,7 @@ class Classmates:
             from pprint import pprint
             print('Список скаченных фотографий:')
             pprint(list_downloaded_photos)
+            return list_downloaded_photos
 
     def clear_download_folder(self, name_folder='download_folder'):
         """Очистка папки для загрузки файлов"""

@@ -1,30 +1,99 @@
-from vk import VK
-from classmates import Classmates
-from yandex import Yan_disk
+def user_vk():
+    id_users = input('Введите id пользователя:\n')
+    token = input('Введите токен:\n')
+    from vk import VK
+    user = VK(id_users, token)
+    method_selection = input('Введите любую букву для выбора альбома \n'
+                             'Или просто нажмите "Enter" для выбора фотографий из профиля ')
+    if method_selection:
+        albums = user.user_albums()
+        if isinstance(albums, list):
+            print('Список альбомов пользователя')
+            [print(album) for album in albums]
+            album_id = input('Введите id альбома\n')
+            list_downloaded_photos = user.download_photos(album_id=album_id)
+            return list_downloaded_photos
+        else:
+            print('Загрузка фотографий из альбома не удалась.\n'
+                  'Загрузить фотографии из профиля?')
+            action = input('Для загрузки фотографий введите любую букву, для отмены нажмите "Enter" ')
+            if action:
+                list_downloaded_photos = user.download_photos()
+                return list_downloaded_photos
+            else:
+                print('Программа завершена')
+                return False
+    else:
+        list_downloaded_photos = user.download_photos()
+        return list_downloaded_photos
 
 
-# По условию задания для VK требуется вводить id пользователя.
-# Поиск токена по ссылке - частный случай, поэтому в дальнейшую программу я эту функцию не встраивал.
+def user_ok():
+    fid = input('Введите ID пользователя ')
+    application_key = input('Введите публичный ключ приложения\n')
+    secret_key = input('Введите сессионный секретный ключ\n')
+    access_token = input('Введите токен\n')
+    from classmates import Classmates
+    user = Classmates(fid, secret_key, application_key, access_token)
+    list_downloaded_photos = user.download_photos()
+    return list_downloaded_photos
 
-def user_id(token='958eb5d439726565e9333aa30e50e0f937ee432e927f0dbd541c541887d919a7c56f95c04217915c32008',
-            search_link='https://vk.com/begemot_korovin'):
-    """Получение id по https://vk.com/begemot_korovin"""
-    import requests
-    URL = 'https://api.vk.com/method/users.search'
-    params = {
-        'access_token': token,
-        'q': search_link,
-        'v': '5.131',
-    }
-    res = requests.get(URL, params=params).json()
-    id_vk = res['response']['items'][0]['id']
-    return id_vk  # users_id = '552934290' (Полученный id)
+
+def clear_folder(name_folder):
+    """Очистка папки для загрузки файлов"""
+    import os
+    directory = os.getcwd()
+    name_folder = name_folder
+    path = os.path.join(directory, name_folder)
+    if not os.path.exists(path):
+        print(f'Папка "{name_folder}" отсутсвует в текущей директории')
+    else:
+        list_files = os.listdir(path)
+        [os.remove(f'{path}/{photo}') for photo in list_files]
+        print(f'Папка "{name_folder}" очищена от файлов')
+    return True
+
+
+def user_start():
+    social_network = int(input('Введите "1" для выбора фотографий из "В Контакте", \nВведите "2" для выбора фотографий'
+                               ' из "Одноклассники"\n'))
+    download = False
+    if social_network == 1:
+        download = user_vk()
+    elif social_network == 2:
+        download = user_ok()
+    else:
+        print('Неправильный ввод')
+        return False
+    if download:
+        query = input('Загрузить фотографии на Яндекс Диск?\n'
+                      'Если "нет" - введите любую букву, если "да" - нажмите "Enter" ')
+        if not query:
+            from yandex import Yan_disk
+            token = input('Введите токен для Яндекс Диска:\n')
+            upload = Yan_disk(token)
+            creat = input('На Яндекс Диске будет создана папка "Фотографии"\n'
+                          'Для отмены введите любую букву, для продолжения нажмите "Enter" ')
+            if creat:
+                result = upload.uploading_files()
+            else:
+                upload.creating_folder()
+                result = upload.uploading_files()
+        else:
+            result = True
+        select = input('Удалить загруженные фотографии с компьютера?\n'
+                       '"ДА" - введите любую букву. "НЕТ" - нажмите "Enter" ')
+        if select:
+            clear_folder('download_folder')
+    else:
+        result = False
+    if result:
+        print('Выбранные операции завершены успешно')
+    else:
+        print('Ошибка загрузки фотографий')
+    return result
 
 
 if __name__ == '__main__':
-    begemot = VK('552934290')
-    begemot.download_photos()
-    friend = Classmates('')
-    friend.download_photos()
-    user = Yan_disk('')
-    user.uploading_files()
+    user_start()
+
